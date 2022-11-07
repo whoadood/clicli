@@ -21,6 +21,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^9.0.2",
     "@types/figlet": "^1.5.5",
+    "@types/fs-extra": "^9.0.13",
     "@types/gradient-string": "^1.1.2",
     "@types/inquirer": "^9.0.2",
     "@types/node": "^18.11.9",
@@ -31,6 +32,7 @@
   "dependencies": {
     "chalk": "^5.1.2",
     "figlet": "^1.5.2",
+    "fs-extra": "^10.1.0",
     "gradient-string": "^2.0.2",
     "inquirer": "^9.1.4"
   }

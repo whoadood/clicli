@@ -1,5 +1,20 @@
-import fs from "fs";
+import fs from "fs-extra";
 import path from "path";
+
+type fileOption = {
+  inUse: boolean;
+  file: {
+    filePath: string;
+    fileName: string;
+    fileContent: string;
+  };
+};
+
+type Options = {
+  index: fileOption;
+  markdown: fileOption;
+  readme: fileOption;
+};
 
 export function main() {
   console.log("clicli --entry");
@@ -8,10 +23,41 @@ export function main() {
   const templatePath = path.resolve(process.cwd(), "templates");
   const templateFiles = fs.readdirSync(templatePath);
 
-  templateFiles.forEach((file: string) => {
+  const fileOptions = templateFiles.map((file: string) => {
     const filePath = path.join(templatePath, file);
     const fileContent = fs.readFileSync(filePath, "utf8");
-    console.log(`${file}: `, fileContent);
+    return {
+      inUse: Math.floor(Math.random() * 2) === 1,
+      file: { filePath, fileName: file, fileContent },
+    };
   });
+
+  selectFile({
+    index: fileOptions[0],
+    markdown: fileOptions[1],
+    readme: fileOptions[2],
+  });
+
   console.log("complete");
+}
+
+function selectFile(options: Options) {
+  if (options.index.inUse) {
+    console.log("\nindex in use");
+    logFile(options.index);
+  }
+  if (options.markdown.inUse) {
+    console.log("\nmarkdown in use");
+    logFile(options.markdown);
+  }
+  if (options.readme.inUse) {
+    console.log("\nreadme in use");
+    logFile(options.readme);
+  }
+}
+
+function logFile(option: fileOption) {
+  if (option.inUse) {
+    console.log(`${option.file.fileName}: `, option.file.fileContent);
+  }
 }
