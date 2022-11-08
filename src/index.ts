@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import arg from "arg";
+import { fileURLToPath } from "url";
 
 type fileOption = {
   inUse: boolean;
@@ -18,13 +19,20 @@ type Options = {
   readme: fileOption;
 };
 
+const __filename = fileURLToPath(import.meta.url);
+console.log("file\n\n", __filename);
+const distPath = path.dirname(__filename);
+console.log("dist\n\n", distPath);
+const PKG_ROOT = path.join(distPath, "../");
+console.log("root\n\n", PKG_ROOT);
+
 export function main() {
   console.log("clicli --entry");
 
   const options = parseOptions(process.argv);
 
   console.log("reading files...");
-  const templatePath = path.resolve(process.cwd(), "tmp");
+  const templatePath = path.resolve(PKG_ROOT, "tmp");
   const templateFiles = fs.readdirSync(templatePath);
 
   const [index, markdown, readme] = templateFiles.map((file: string) => {
