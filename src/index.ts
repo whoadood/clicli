@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import arg from "arg";
 
 type fileOption = {
   inUse: boolean;
@@ -7,6 +8,7 @@ type fileOption = {
     filePath: string;
     fileName: string;
     fileContent: string;
+    installer: ((option: fileOption) => void) | undefined;
   };
 };
 
@@ -19,23 +21,45 @@ type Options = {
 export function main() {
   console.log("clicli --entry");
 
+  const options = parseOptions(process.argv);
+
   console.log("reading files...");
   const templatePath = path.resolve(process.cwd(), "templates");
   const templateFiles = fs.readdirSync(templatePath);
 
-  const fileOptions = templateFiles.map((file: string) => {
+  const [index, markdown, readme] = templateFiles.map((file: string) => {
     const filePath = path.join(templatePath, file);
     const fileContent = fs.readFileSync(filePath, "utf8");
+    const fileSlug = file.split(".")[0];
+    let inUse;
+    if (fileSlug === "index" && options["--index"]) {
+      inUse = true;
+    } else if (fileSlug === "markdown" && options["--markdown"]) {
+      inUse = true;
+    } else if (fileSlug === "readme" && options["--readme"]) {
+      inUse = true;
+    } else {
+      inUse = false;
+    }
+    let installer;
+    if (fileSlug === "index") {
+      installer = indexInstaller;
+    } else if (fileSlug === "markdown") {
+      installer = markdownInstaller;
+    } else if (fileSlug === "readme") {
+      installer = readmeInstaller;
+    }
+
     return {
-      inUse: Math.floor(Math.random() * 2) === 1,
-      file: { filePath, fileName: file, fileContent },
+      inUse: inUse,
+      file: { filePath, fileName: file, fileContent, installer },
     };
   });
 
   selectFile({
-    index: fileOptions[0],
-    markdown: fileOptions[1],
-    readme: fileOptions[2],
+    index: index,
+    markdown: markdown,
+    readme: readme,
   });
 
   console.log("complete");
@@ -44,20 +68,49 @@ export function main() {
 function selectFile(options: Options) {
   if (options.index.inUse) {
     console.log("\nindex in use");
-    logFile(options.index);
+    if (options.index.file.installer)
+      options.index.file.installer(options.index);
   }
   if (options.markdown.inUse) {
     console.log("\nmarkdown in use");
-    logFile(options.markdown);
+    if (options.markdown.file.installer)
+      options.markdown.file.installer(options.markdown);
   }
   if (options.readme.inUse) {
     console.log("\nreadme in use");
-    logFile(options.readme);
+    if (options.readme.file.installer)
+      options.readme.file.installer(options.readme);
   }
 }
 
 function logFile(option: fileOption) {
-  if (option.inUse) {
-    console.log(`${option.file.fileName}: `, option.file.fileContent);
-  }
+  console.log(`${option.file.fileName}: `, option.file.filePath);
+}
+
+function indexInstaller(option: fileOption) {
+  logFile(option);
+}
+function markdownInstaller(option: fileOption) {
+  logFile(option);
+}
+function readmeInstaller(option: fileOption) {
+  logFile(option);
+}
+
+function parseOptions(args: string[]) {
+  const parsedArgs = arg(
+    {
+      "--index": Boolean,
+      "--markdown": Boolean,
+      "--readme": Boolean,
+      "-i": "--index",
+      "-m": "--markdown",
+      "-r": "--readme",
+    },
+    {
+      argv: args.slice(2),
+    }
+  );
+
+  return parsedArgs;
 }
