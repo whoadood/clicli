@@ -24,7 +24,7 @@ export function main() {
   const options = parseOptions(process.argv);
 
   console.log("reading files...");
-  const templatePath = path.resolve(process.cwd(), "templates");
+  const templatePath = path.resolve(process.cwd(), "tmp");
   const templateFiles = fs.readdirSync(templatePath);
 
   const [index, markdown, readme] = templateFiles.map((file: string) => {
@@ -83,13 +83,18 @@ function selectFile(options: Options) {
   }
 }
 
+const destPath = path.join(process.cwd(), "testDest");
+
 function logFile(option: fileOption) {
   console.log(`${option.file.fileName}: `, option.file.filePath);
+  const destFile = path.join(destPath, option.file.fileName);
+  fs.copyFileSync(option.file.filePath, destFile);
 }
 
 function indexInstaller(option: fileOption) {
   logFile(option);
 }
+
 function markdownInstaller(option: fileOption) {
   logFile(option);
 }
